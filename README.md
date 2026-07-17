@@ -2,6 +2,8 @@
 
 A native macOS app for batch converting HEIC images to JPEG — fast, private, and free.
 
+> Originally based on [Toni77777/HEIC-to-JPEG-Converter](https://github.com/Toni77777/HEIC-to-JPEG-Converter) by Anton Paliakou. This project diverged after upstream commit [`1ab4143`](https://github.com/Toni77777/HEIC-to-JPEG-Converter/commit/1ab41432e449651b19b9d2140f1728d49ce01d28).
+
 <p align="center">
   <img src="screenshots/Light.png" width="420" alt="Light mode">
   &nbsp;&nbsp;
