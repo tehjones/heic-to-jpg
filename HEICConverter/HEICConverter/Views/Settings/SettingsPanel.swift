@@ -11,34 +11,30 @@ struct SettingsPanel: View {
     @Bindable var viewModel: SettingsViewModel
 
     var body: some View {
-        HStack(spacing: 20) {
-            QualitySliderView(quality: $viewModel.quality)
-                .frame(maxWidth: 450)
-
-            Rectangle()
-                .fill(GlassStyle.glassBorder)
-                .frame(width: 1)
-                .frame(maxHeight: 100)
-
+        HStack(spacing: 18) {
             SaveLocationSection(viewModel: viewModel)
-                .padding(20)
-                .glassCard(cornerRadius: 20)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            Spacer()
+            Divider()
+                .frame(height: 52)
+
+            QualitySliderView(quality: $viewModel.quality)
+                .frame(width: 220)
+
+            Divider()
+                .frame(height: 52)
+
+            NotificationsSection(viewModel: viewModel)
+                .frame(width: 150)
         }
-        .padding(24)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 16)
         .background {
-            Rectangle()
-                .fill(.ultraThinMaterial)
-                .overlay(
-                    Rectangle()
-                        .fill(GlassStyle.glassBackground)
-                        .blendMode(.overlay)
-                )
-                .overlay(alignment: .bottom) {
-                    Rectangle()
-                        .fill(GlassStyle.glassBorder)
-                        .frame(height: 1)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.thinMaterial)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(GlassStyle.glassBorder, lineWidth: 1)
                 }
         }
     }

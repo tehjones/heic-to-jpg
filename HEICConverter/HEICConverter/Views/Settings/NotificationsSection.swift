@@ -9,11 +9,13 @@ import SwiftUI
 
 struct NotificationsSection: View {
     @Bindable var viewModel: SettingsViewModel
-    @Binding var showSettingsAlert: Bool
+    @State private var showSettingsAlert = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(icon: "bell.badge.fill", title: "Notifications")
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Notifications", systemImage: "bell.fill")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
 
             Toggle(isOn: Binding(
                 get: { viewModel.notifyOnCompletion },
@@ -32,16 +34,19 @@ struct NotificationsSection: View {
                     }
                 }
             )) {
-                Text("Notify when finished")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(GlassStyle.textPrimary)
+                Text("Completion alert")
+                    .font(.callout.weight(.medium))
             }
             .toggleStyle(.switch)
-
-            Text("Get a macOS notification when conversion finishes.")
-                .font(.system(size: 12, weight: .regular))
-                .foregroundStyle(GlassStyle.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+            .controlSize(.small)
+        }
+        .alert("Notifications are disabled", isPresented: $showSettingsAlert) {
+            Button("Open System Settings") {
+                viewModel.openNotificationSettings()
+            }
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Enable notifications for HEIC to JPEG Converter in System Settings → Notifications.")
         }
     }
 }

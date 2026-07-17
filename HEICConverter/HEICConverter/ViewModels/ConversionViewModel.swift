@@ -5,6 +5,7 @@
 //  Created by Anton Paliakov on 06/03/2026.
 //
 
+import AppKit
 import Foundation
 import SwiftUI
 import UniformTypeIdentifiers
@@ -54,13 +55,6 @@ final class ConversionViewModel {
     // MARK: - Public
 
     func handleDrop(providers: [NSItemProvider], settings: ConversionSettings) async {
-        guard !isConverting else { return }
-
-        guard settings.customOutputFolder != nil else {
-            showErrorAlert("Choose an output folder in Settings → Save Location before converting.")
-            return
-        }
-
         var urls: [URL] = []
         for provider in providers {
             if let url = await extractURL(from: provider) {
@@ -70,43 +64,35 @@ final class ConversionViewModel {
 
         guard !urls.isEmpty else { return }
 
-        let heicFiles = await fileSystemService.collectHEICFiles(from: urls)
+        await convertInputURLs(urls, settings: settings)
+    }
 
-        guard !heicFiles.isEmpty else {
-            showErrorAlert("No HEIC files found in the dropped items")
-            return
-        }
+    func selectInputFiles(settings: ConversionSettings) async {
+        guard !isConverting else { return }
 
-        var items: [ConversionItem] = []
-        for (fileURL, relativePath) in heicFiles {
-            do {
-                let destinationURL = try await fileSystemService.createDestinationURL(
-                    for: fileURL,
-                    relativePath: relativePath,
-                    settings: settings
-                )
-                items.append(ConversionItem(
-                    sourceURL: fileURL,
-                    destinationURL: destinationURL,
-                    state: .pending,
-                    progress: 0.0,
-                    error: nil,
-                    relativePath: relativePath
-                ))
-            } catch {
-                items.append(ConversionItem(
-                    sourceURL: fileURL,
-                    destinationURL: nil,
-                    state: .failed,
-                    progress: 0.0,
-                    error: error as? ConversionError ?? .unknownError(error.localizedDescription),
-                    relativePath: relativePath
-                ))
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = true
+        panel.allowedContentTypes = [.heic]
+        panel.message = "Choose HEIC photos or folders"
+        panel.prompt = "Convert"
+
+        let urls = await withCheckedContinuation { continuation in
+            let completion: (NSApplication.ModalResponse) -> Void = { response in
+                continuation.resume(returning: response == .OK ? panel.urls : [])
+            }
+
+            if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+                panel.beginSheetModal(for: window, completionHandler: completion)
+            } else {
+                panel.begin(completionHandler: completion)
             }
         }
 
-        conversionItems = items
-        await startConversion(settings: settings)
+        guard !urls.isEmpty else { return }
+
+        await convertInputURLs(urls, settings: settings)
     }
 
     func startConversion(settings: ConversionSettings) async {
@@ -144,6 +130,7 @@ final class ConversionViewModel {
             if result.success {
                 conversionItems[itemIndex].state = .completed
                 conversionItems[itemIndex].progress = 1.0
+                conversionItems[itemIndex].destinationURL = result.destinationURL
             } else {
                 conversionItems[itemIndex].state = .failed
                 conversionItems[itemIndex].error = result.error
@@ -163,6 +150,48 @@ final class ConversionViewModel {
     }
 
     // MARK: - Private
+
+    private func convertInputURLs(_ urls: [URL], settings: ConversionSettings) async {
+        guard !isConverting else { return }
+
+        let heicFiles = await fileSystemService.collectHEICFiles(from: urls)
+
+        guard !heicFiles.isEmpty else {
+            showErrorAlert("No HEIC files found in the selected items")
+            return
+        }
+
+        var items: [ConversionItem] = []
+        for (fileURL, relativePath) in heicFiles {
+            do {
+                let destinationURL = try await fileSystemService.createDestinationURL(
+                    for: fileURL,
+                    relativePath: relativePath,
+                    settings: settings
+                )
+                items.append(ConversionItem(
+                    sourceURL: fileURL,
+                    destinationURL: destinationURL,
+                    state: .pending,
+                    progress: 0.0,
+                    error: nil,
+                    relativePath: relativePath
+                ))
+            } catch {
+                items.append(ConversionItem(
+                    sourceURL: fileURL,
+                    destinationURL: nil,
+                    state: .failed,
+                    progress: 0.0,
+                    error: error as? ConversionError ?? .unknownError(error.localizedDescription),
+                    relativePath: relativePath
+                ))
+            }
+        }
+
+        conversionItems = items
+        await startConversion(settings: settings)
+    }
 
     private func extractURL(from provider: NSItemProvider) async -> URL? {
         let fileURLType = UTType.fileURL.identifier

@@ -10,128 +10,108 @@ import UniformTypeIdentifiers
 
 struct DropZoneView: View {
     @Binding var isTargeted: Bool
+    let outputFolder: URL?
+    let onSelectInput: () -> Void
     let onDrop: ([NSItemProvider]) -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     var body: some View {
-        VStack(spacing: 32) {
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                GlassStyle.accentBlue.opacity(isTargeted ? 0.4 : 0.2),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 80
-                        )
-                    )
-                    .frame(width: 120, height: 120)
-                    .blur(radius: 20)
+        Button(action: onSelectInput) {
+            VStack(spacing: 20) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .fill(GlassStyle.accentBlue.opacity(isTargeted ? 0.18 : 0.10))
+                        .frame(width: 84, height: 84)
 
-                Image(systemName: "photo.on.rectangle.angled")
-                    .font(.system(size: 72, weight: .thin))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                GlassStyle.accentBlue,
-                                GlassStyle.accentPurple
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .scaleEffect(isTargeted ? 1.1 : 1.0)
-                    .animation(.spring(response: 0.3), value: isTargeted)
-            }
-
-            VStack(spacing: 12) {
-                Text("Drop HEIC Images Here")
-                    .font(.system(size: 28, weight: .semibold, design: .rounded))
-                    .foregroundStyle(GlassStyle.textPrimary)
-
-                Text("Supports files and folders")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundStyle(GlassStyle.textSecondary)
-            }
-
-            HStack(spacing: 8) {
-                Image(systemName: "bolt.fill")
-                    .font(.system(size: 12))
-                Text("Conversion starts automatically")
-                    .font(.system(size: 14, weight: .medium))
-            }
-            .foregroundStyle(GlassStyle.textSecondary)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 10)
-            .glassPill()
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background {
-            let shape = RoundedRectangle(cornerRadius: 24, style: .continuous)
-
-            ZStack {
-                if reduceTransparency {
-                    shape.fill(GlassStyle.reducedTransparencyFill)
-                } else {
-                    shape
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            shape
-                                .fill(GlassStyle.glassBackground)
-                                .blendMode(.overlay)
-                        )
+                    Image(systemName: "photo.on.rectangle.angled")
+                        .font(.system(size: 38, weight: .medium))
+                        .foregroundStyle(GlassStyle.accentGradient)
+                        .scaleEffect(isTargeted ? 1.06 : 1.0)
                 }
 
-                if isTargeted {
-                    shape
-                        .fill(GlassStyle.accentBlue.opacity(0.10))
-                        .blendMode(.plusLighter)
+                VStack(spacing: 8) {
+                    Text(isTargeted ? "Drop to convert" : "Choose or drop HEIC photos")
+                        .font(.title2.weight(.semibold))
+
+                    Text(instructionText)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                 }
 
-                shape
-                    .strokeBorder(
-                        style: StrokeStyle(
-                            lineWidth: 3,
-                            lineCap: .round,
-                            dash: [15, 10]
-                        )
-                    )
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: isTargeted ? [
-                                GlassStyle.accentBlue,
-                                GlassStyle.accentPurple
-                            ] : [
-                                GlassStyle.glassBorder,
-                                GlassStyle.glassBorder.opacity(0.6)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-
-                shape
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [GlassStyle.glassHighlight, Color.clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-                    .blendMode(.screen)
-                    .opacity(0.35)
-                    .padding(1)
+                Label("Ready — conversion starts automatically", systemImage: "checkmark.circle.fill")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background {
+                let shape = RoundedRectangle(cornerRadius: 24, style: .continuous)
+
+                ZStack {
+                    if reduceTransparency {
+                        shape.fill(GlassStyle.reducedTransparencyFill)
+                    } else {
+                        shape.fill(.thinMaterial)
+                    }
+
+                    if isTargeted {
+                        shape.fill(GlassStyle.accentBlue.opacity(0.10))
+                    }
+
+                    shape
+                        .strokeBorder(
+                            style: StrokeStyle(
+                                lineWidth: isTargeted ? 2 : 1.5,
+                                lineCap: .round,
+                                dash: [8, 6]
+                            )
+                        )
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: isTargeted ? [
+                                    GlassStyle.accentBlue,
+                                    GlassStyle.accentPurple
+                                ] : [
+                                    GlassStyle.glassBorder,
+                                    GlassStyle.glassBorder.opacity(0.6)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+            }
+            .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
-        .padding(32)
-        .animation(.easeInOut(duration: 0.3), value: isTargeted)
+        .buttonStyle(DropZoneButtonStyle())
+        .scaleEffect(isTargeted ? 1.005 : 1.0)
+        .animation(
+            reduceMotion ? nil : .spring(response: 0.32, dampingFraction: 1.0),
+            value: isTargeted
+        )
         .onDrop(of: [UTType.fileURL], isTargeted: $isTargeted) { providers in
             onDrop(providers)
             return true
         }
+        .accessibilityHint("Opens a file picker. You can also drag HEIC files or folders here.")
+        .help("Click to choose HEIC photos or folders")
+    }
+
+    private var instructionText: String {
+        if let outputFolder {
+            return "JPEGs will be saved to \(outputFolder.lastPathComponent)."
+        }
+        return "Each JPEG will be saved beside its original."
+    }
+}
+
+private struct DropZoneButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.88 : 1.0)
+            .scaleEffect(reduceMotion ? 1.0 : (configuration.isPressed ? 0.997 : 1.0))
     }
 }

@@ -12,9 +12,10 @@ struct HEICConverterApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView()
-                .frame(width: 850, height: 750)
+                .frame(minWidth: 760, minHeight: 580)
         }
+        .defaultSize(width: 800, height: 660)
         .windowToolbarLabelStyle(fixed: .titleOnly)
-        .windowResizability(.contentSize)
+        .windowResizability(.contentMinSize)
     }
 }

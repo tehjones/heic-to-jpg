@@ -12,6 +12,7 @@ extension UserDefaults {
         static let conversionQuality = "conversionQuality"
         static let notifyOnCompletion = "notifyOnCompletion"
         static let outputFolderBookmark = "outputFolderBookmark"
+        static let outputLocationMode = "outputLocationMode"
     }
 
     var conversionQuality: Double {
@@ -27,5 +28,10 @@ extension UserDefaults {
     var outputFolderBookmark: Data? {
         get { data(forKey: Keys.outputFolderBookmark) }
         set { set(newValue, forKey: Keys.outputFolderBookmark) }
+    }
+
+    var outputLocationMode: String? {
+        get { string(forKey: Keys.outputLocationMode) }
+        set { set(newValue, forKey: Keys.outputLocationMode) }
     }
 }

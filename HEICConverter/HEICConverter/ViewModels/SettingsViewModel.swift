@@ -9,6 +9,12 @@ import Foundation
 import SwiftUI
 import AppKit
 
+enum OutputLocationMode: String {
+    case sourceFolders
+    case downloads
+    case customFolder
+}
+
 @Observable
 @MainActor
 final class SettingsViewModel {
@@ -27,12 +33,28 @@ final class SettingsViewModel {
         }
     }
 
-    var customOutputFolder: URL?
+    private(set) var outputLocationMode: OutputLocationMode
+    private(set) var customOutputFolder: URL?
+
+    var downloadsFolder: URL {
+        Self.downloadsFolder
+    }
+
+    var outputFolder: URL? {
+        switch outputLocationMode {
+        case .sourceFolders:
+            nil
+        case .downloads:
+            downloadsFolder
+        case .customFolder:
+            customOutputFolder
+        }
+    }
 
     var settings: ConversionSettings {
         ConversionSettings(
             quality: quality,
-            customOutputFolder: customOutputFolder,
+            customOutputFolder: outputFolder,
             notifyOnCompletion: notifyOnCompletion
         )
     }
@@ -49,8 +71,38 @@ final class SettingsViewModel {
 
     init(notificationService: NotificationService = .init()) {
         self.notificationService = notificationService
-        if let url = Self.restoreOutputFolder() {
-            customOutputFolder = url
+
+        let restoredFolder = Self.restoreOutputFolder()
+        let restoredDownloads = restoredFolder.map(Self.isDownloadsFolder) ?? false
+        let restoredCustomFolder = restoredDownloads ? nil : restoredFolder
+        customOutputFolder = restoredCustomFolder
+
+        if restoredDownloads {
+            UserDefaults.standard.outputFolderBookmark = nil
+        }
+
+        if let savedMode = UserDefaults.standard.outputLocationMode
+            .flatMap(OutputLocationMode.init(rawValue:)) {
+            if savedMode == .customFolder && restoredDownloads {
+                outputLocationMode = .downloads
+            } else if savedMode == .customFolder && restoredCustomFolder == nil {
+                outputLocationMode = .sourceFolders
+            } else {
+                outputLocationMode = savedMode
+            }
+        } else {
+            // Before the destination menu existed, a saved bookmark meant the
+            // custom folder was active. Preserve that choice during migration.
+            if restoredDownloads {
+                outputLocationMode = .downloads
+            } else {
+                outputLocationMode = restoredFolder == nil ? .sourceFolders : .customFolder
+            }
+        }
+
+        UserDefaults.standard.outputLocationMode = outputLocationMode.rawValue
+
+        if outputLocationMode == .customFolder, let url = restoredCustomFolder {
             if url.startAccessingSecurityScopedResource() {
                 scopedURL = url
             }
@@ -81,13 +133,51 @@ final class SettingsViewModel {
         panel.allowsMultipleSelection = false
         panel.message = "Select a folder for converted images"
 
-        panel.begin { [weak self] response in
-            guard response == .OK, let url = panel.url else { return }
-            self?.scopedURL?.stopAccessingSecurityScopedResource()
-            self?.customOutputFolder = url
-            self?.scopedURL = url.startAccessingSecurityScopedResource() ? url : nil
-            self?.saveOutputFolder(url)
+        let completion: (NSApplication.ModalResponse) -> Void = { [weak self] response in
+            guard response == .OK, let url = panel.url, let self else { return }
+
+            if Self.isDownloadsFolder(url) {
+                self.useDownloadsFolder()
+                return
+            }
+
+            self.scopedURL?.stopAccessingSecurityScopedResource()
+            self.customOutputFolder = url
+            self.scopedURL = url.startAccessingSecurityScopedResource() ? url : nil
+            self.saveOutputFolder(url)
+            self.setOutputLocationMode(.customFolder)
         }
+
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            panel.beginSheetModal(for: window, completionHandler: completion)
+        } else {
+            panel.begin(completionHandler: completion)
+        }
+    }
+
+    func useSourceFolders() {
+        scopedURL?.stopAccessingSecurityScopedResource()
+        scopedURL = nil
+        setOutputLocationMode(.sourceFolders)
+    }
+
+    func useDownloadsFolder() {
+        scopedURL?.stopAccessingSecurityScopedResource()
+        scopedURL = nil
+        setOutputLocationMode(.downloads)
+    }
+
+    func useCustomFolder() {
+        guard let customOutputFolder else {
+            selectCustomFolder()
+            return
+        }
+
+        scopedURL?.stopAccessingSecurityScopedResource()
+        scopedURL = customOutputFolder.startAccessingSecurityScopedResource()
+            ? customOutputFolder
+            : nil
+        setOutputLocationMode(.customFolder)
     }
 
     // MARK: - Persistence
@@ -98,6 +188,19 @@ final class SettingsViewModel {
             includingResourceValuesForKeys: nil,
             relativeTo: nil
         )
+    }
+
+    private func setOutputLocationMode(_ mode: OutputLocationMode) {
+        outputLocationMode = mode
+        UserDefaults.standard.outputLocationMode = mode.rawValue
+    }
+
+    private static var downloadsFolder: URL {
+        FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0]
+    }
+
+    private static func isDownloadsFolder(_ url: URL) -> Bool {
+        url.standardizedFileURL == downloadsFolder.standardizedFileURL
     }
 
     private static func restoreOutputFolder() -> URL? {

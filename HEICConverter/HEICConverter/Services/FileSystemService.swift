@@ -48,39 +48,25 @@ actor FileSystemService {
         relativePath: String?,
         settings: ConversionSettings
     ) async throws -> URL {
-        guard let outputFolder = settings.customOutputFolder else {
-            throw ConversionError.fileWriteError("No output folder selected")
-        }
+        let directory: URL
 
-        var directory = outputFolder
+        if let outputFolder = settings.customOutputFolder {
+            var customDirectory = outputFolder
 
-        if let relativePath {
-            let subdirectory = (relativePath as NSString).deletingLastPathComponent
-            if !subdirectory.isEmpty {
-                directory = directory.appendingPathComponent(subdirectory)
+            if let relativePath {
+                let subdirectory = (relativePath as NSString).deletingLastPathComponent
+                if !subdirectory.isEmpty {
+                    customDirectory = customDirectory.appendingPathComponent(subdirectory)
+                }
             }
-        }
 
-        try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
+            try fileManager.createDirectory(at: customDirectory, withIntermediateDirectories: true)
+            directory = customDirectory
+        } else {
+            directory = sourceURL.deletingLastPathComponent()
+        }
 
         let filename = sourceURL.deletingPathExtension().lastPathComponent
-        return resolveNameConflict(for: directory.appendingPathComponent("\(filename).jpg"))
-    }
-
-    /// Appends a counter suffix to avoid overwriting existing files.
-    private func resolveNameConflict(for url: URL) -> URL {
-        guard fileManager.fileExists(atPath: url.path) else { return url }
-
-        let stem = url.deletingPathExtension().lastPathComponent
-        let directory = url.deletingLastPathComponent()
-
-        for counter in 2... {
-            let candidate = directory.appendingPathComponent("\(stem) (\(counter)).jpg")
-            if !fileManager.fileExists(atPath: candidate.path) {
-                return candidate
-            }
-        }
-
-        return url
+        return directory.appendingPathComponent("\(filename).jpg")
     }
 }

@@ -13,7 +13,7 @@ A native macOS app for batch converting HEIC images to JPEG — fast, private, a
 - **Drag & drop** — drop files or entire folders, conversion starts automatically
 - **Batch conversion** — processes multiple images concurrently
 - **JPEG quality control** — slider to balance file size and image quality
-- **Custom save location** — choose any output folder
+- **Same-folder output** — each JPEG is saved beside its original, or choose a custom folder
 - **Completion notifications** — get notified when a batch finishes
 - **100% offline** — no internet connection, no cloud upload, no tracking
 - **App Sandbox** — sandboxed with user-selected file access only
