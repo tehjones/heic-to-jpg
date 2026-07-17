@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		0A73BED52F5AE565007DD1F3 /* HEICConverter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HEICConverter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0A73BED52F5AE565007DD1F3 /* HEIC to JPG.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "HEIC to JPG.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -53,7 +53,7 @@
 		0A73BED62F5AE565007DD1F3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				0A73BED52F5AE565007DD1F3 /* HEICConverter.app */,
+				0A73BED52F5AE565007DD1F3 /* HEIC to JPG.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,8 +79,8 @@
 			name = HEICConverter;
 			packageProductDependencies = (
 			);
-			productName = HEICConverter;
-			productReference = 0A73BED52F5AE565007DD1F3 /* HEICConverter.app */;
+			productName = "HEIC to JPG";
+			productReference = 0A73BED52F5AE565007DD1F3 /* HEIC to JPG.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -271,7 +271,7 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HEICConverter/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "HEIC to JPEG Converter";
+				INFOPLIST_KEY_CFBundleDisplayName = "HEIC to JPG";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -280,7 +280,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.poland.HEICConverter;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "HEIC to JPG";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -307,7 +307,7 @@
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HEICConverter/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "HEIC to JPEG Converter";
+				INFOPLIST_KEY_CFBundleDisplayName = "HEIC to JPG";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -316,7 +316,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.poland.HEICConverter;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "HEIC to JPG";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;

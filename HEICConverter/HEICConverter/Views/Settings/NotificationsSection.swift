@@ -46,7 +46,7 @@ struct NotificationsSection: View {
             }
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Enable notifications for HEIC to JPEG Converter in System Settings → Notifications.")
+            Text("Enable notifications for HEIC to JPG in System Settings → Notifications.")
         }
     }
 }

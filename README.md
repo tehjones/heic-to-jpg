@@ -1,4 +1,4 @@
-# HEIC to JPEG Converter
+# HEIC to JPG
 
 A native macOS app for batch converting HEIC images to JPEG — fast, private, and free.
 
@@ -23,11 +23,11 @@ A native macOS app for batch converting HEIC images to JPEG — fast, private, a
 Grab the latest `.dmg` from the [Releases](../../releases) page.
 
 > **Note:** The app is ad-hoc signed (no Apple Developer account). On first launch macOS Gatekeeper will block it. To open it:
-> 1. Right-click `HEICConverter.app` → **Open** → **Open** again in the dialog
+> 1. Right-click `HEIC to JPG.app` → **Open** → **Open** again in the dialog
 >
 > Or via Terminal:
 > ```bash
-> sudo xattr -rd com.apple.quarantine "/Applications/HEICConverter.app"
+> sudo xattr -rd com.apple.quarantine "/Applications/HEIC to JPG.app"
 > ```
 
 ## Building from Source
